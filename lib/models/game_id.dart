@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
+import 'bi.dart';
 
-import '../core/localization/generated/app_localizations.dart';
-import '../core/theme/app_theme.dart';
-
-/// The 12 games. Each game's code will live in lib/games/<name>/.
+/// The 12 games.
 enum GameId {
   alphabet,
   numbers,
@@ -18,42 +15,60 @@ enum GameId {
   habits,
   quiz;
 
-  IconData get icon => switch (this) {
-        GameId.alphabet => Icons.abc_rounded,
-        GameId.numbers => Icons.pin_rounded,
-        GameId.shapes => Icons.category_rounded,
-        GameId.colors => Icons.palette_rounded,
-        GameId.animals => Icons.pets_rounded,
-        GameId.fruits => Icons.eco_rounded,
-        GameId.maths => Icons.calculate_rounded,
-        GameId.spelling => Icons.spellcheck_rounded,
-        GameId.memory => Icons.style_rounded,
-        GameId.puzzles => Icons.extension_rounded,
-        GameId.habits => Icons.clean_hands_rounded,
-        GameId.quiz => Icons.quiz_rounded,
+  String get emoji => switch (this) {
+        GameId.alphabet => '🔤',
+        GameId.numbers => '🔢',
+        GameId.shapes => '🔷',
+        GameId.colors => '🎨',
+        GameId.animals => '🦁',
+        GameId.fruits => '🍎',
+        GameId.maths => '➕',
+        GameId.spelling => '✏️',
+        GameId.memory => '🃏',
+        GameId.puzzles => '🧩',
+        GameId.habits => '🦷',
+        GameId.quiz => '🌟',
       };
 
-  Color get color => const [
-        AppColors.sky,
-        AppColors.yellow,
-        AppColors.pink,
-        AppColors.mint,
-        AppColors.orange,
-        AppColors.purple,
-      ][index % 6];
+  Bi get nameBi => switch (this) {
+        GameId.alphabet => const Bi('ABC & Varna', 'ABC और वर्णमाला'),
+        GameId.numbers => const Bi('Number World', 'संख्या संसार'),
+        GameId.shapes => const Bi('Shape Matcher', 'आकृति मिलान'),
+        GameId.colors => const Bi('Color Master', 'रंग मास्टर'),
+        GameId.animals => const Bi('Animal Kingdom', 'जानवरों की दुनिया'),
+        GameId.fruits => const Bi('Fruit & Veggie Fun', 'फल और सब्ज़ी मज़ा'),
+        GameId.maths => const Bi('Maths Champion', 'गणित चैंपियन'),
+        GameId.spelling => const Bi('Word Builder', 'शब्द निर्माता'),
+        GameId.memory => const Bi('Memory Master', 'याददाश्त मास्टर'),
+        GameId.puzzles => const Bi('Puzzle Planet', 'पहेली ग्रह'),
+        GameId.habits => const Bi('Good Habits', 'अच्छी आदतें'),
+        GameId.quiz => const Bi('Little Quiz Star', 'नन्हा क्विज़ स्टार'),
+      };
 
-  String title(AppLocalizations l) => switch (this) {
-        GameId.alphabet => l.gameAlphabet,
-        GameId.numbers => l.gameNumbers,
-        GameId.shapes => l.gameShapes,
-        GameId.colors => l.gameColors,
-        GameId.animals => l.gameAnimals,
-        GameId.fruits => l.gameFruits,
-        GameId.maths => l.gameMaths,
-        GameId.spelling => l.gameSpelling,
-        GameId.memory => l.gameMemory,
-        GameId.puzzles => l.gamePuzzles,
-        GameId.habits => l.gameHabits,
-        GameId.quiz => l.gameQuiz,
+  Bi get howTo => switch (this) {
+        GameId.alphabet => const Bi('Tap the right letter or picture.',
+            'सही अक्षर या चित्र को छुओ।'),
+        GameId.numbers => const Bi(
+            'Count, find and match numbers.', 'गिनो, संख्या खोजो और मिलाओ।'),
+        GameId.shapes =>
+          const Bi('Find the matching shape.', 'सही आकृति खोजो।'),
+        GameId.colors => const Bi('Find the right colour.', 'सही रंग खोजो।'),
+        GameId.animals => const Bi('Learn animals and their sounds.',
+            'जानवरों और उनकी आवाज़ें सीखो।'),
+        GameId.fruits => const Bi(
+            'Find fruits and vegetables.', 'फल और सब्ज़ियाँ पहचानो।'),
+        GameId.maths =>
+          const Bi('Solve the number puzzles.', 'गणित के सवाल हल करो।'),
+        GameId.spelling => const Bi('Build the word. Pick the missing part.',
+            'शब्द बनाओ। छूटा हुआ हिस्सा चुनो।'),
+        GameId.memory => const Bi('Flip cards and find matching pairs.',
+            'कार्ड पलटो और जोड़ियाँ खोजो।'),
+        GameId.puzzles => const Bi(
+            'Tap two pieces to swap them. Finish the picture!',
+            'दो टुकड़े छूकर बदलो। चित्र पूरा करो!'),
+        GameId.habits =>
+          const Bi('Choose the good habit.', 'अच्छी आदत चुनो।'),
+        GameId.quiz =>
+          const Bi('Answer fun questions.', 'मज़ेदार सवालों के जवाब दो।'),
       };
 }

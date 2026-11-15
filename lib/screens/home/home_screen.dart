@@ -4,10 +4,17 @@ import 'package:provider/provider.dart';
 import '../../core/audio/speech_service.dart';
 import '../../core/localization/generated/app_localizations.dart';
 import '../../core/localization/language_provider.dart';
+import '../../core/localization/ui_text.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/game_id_ui.dart';
 import '../../core/widgets/gigi_mascot.dart';
 import '../../models/game_id.dart';
-import '../shared/coming_soon_tab.dart';
+import '../../services/progress_service.dart';
+import '../levels/level_map_screen.dart';
+import '../parent/parent_screen.dart';
+import '../play/game_screen.dart';
+import '../progress/progress_screen.dart';
+import '../rewards/rewards_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,18 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final Widget body = switch (_tab) {
+      0 => const HomeTab(),
+      1 => const RewardsScreen(),
+      2 => const ProgressScreen(),
+      _ => const ParentScreen(),
+    };
     return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(
-          index: _tab,
-          children: [
-            const _HomeTab(),
-            ComingSoonTab(title: l.navRewards),
-            ComingSoonTab(title: l.navProgress),
-            ComingSoonTab(title: l.navParent),
-          ],
-        ),
-      ),
+      body: SafeArea(child: body),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
@@ -53,8 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HomeTab extends StatelessWidget {
-  const _HomeTab();
+class HomeTab extends StatelessWidget {
+  const HomeTab({super.key});
 
   Future<void> _hearGigi(BuildContext context) async {
     final l = AppLocalizations.of(context);
@@ -73,6 +76,10 @@ class _HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final lang = context.watch<LanguageProvider>();
+    final progress = context.watch<ProgressService>();
+    final code = lang.code;
+    final cont = progress.lastPlayed ?? GameId.alphabet;
+    final contLevel = progress.highestUnlocked(cont);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -83,37 +90,25 @@ class _HomeTab extends StatelessWidget {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const GigiMascot(size: 72),
-                        const SizedBox(width: 12),
+                        const GigiMascot(size: 64),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l.appTitle,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.ink,
-                                ),
-                              ),
-                              Text(
-                                l.tagline,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.ink,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            UiText.tapToPlay.of(code),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         FilledButton.tonalIcon(
                           onPressed: () => lang.toggle(),
                           icon: const Icon(Icons.translate_rounded),
@@ -121,7 +116,7 @@ class _HomeTab extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 10,
                       runSpacing: 8,
@@ -130,23 +125,63 @@ class _HomeTab extends StatelessWidget {
                         Chip(
                           avatar: const Icon(Icons.star_rounded,
                               color: AppColors.orange),
-                          label: Text(l.starsCount(0)),
+                          label: Text(l.starsCount(progress.totalStars)),
                           backgroundColor: AppColors.yellow,
                         ),
-                        FilledButton.icon(
+                        FilledButton.tonalIcon(
                           onPressed: () => _hearGigi(context),
                           icon: const Icon(Icons.volume_up_rounded),
                           label: Text(l.hearGigi),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l.welcomeMessage,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
+                    const SizedBox(height: 10),
+                    Material(
+                      color: cont.color,
+                      borderRadius: BorderRadius.circular(24),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                GameScreen(game: cont, level: contLevel),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            children: [
+                              Text(cont.emoji,
+                                  style: const TextStyle(fontSize: 40)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      UiText.continuePlaying.of(code),
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.ink,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${cont.nameBi.of(code)} • ${UiText.level(contLevel).of(code)}',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.ink,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.play_circle_fill_rounded,
+                                  size: 48, color: AppColors.ink),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -154,13 +189,13 @@ class _HomeTab extends StatelessWidget {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: columns,
                   mainAxisSpacing: 14,
                   crossAxisSpacing: 14,
-                  childAspectRatio: 1.05,
+                  childAspectRatio: 1.0,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, i) => _GameCard(game: GameId.values[i]),
@@ -180,44 +215,40 @@ class _GameCard extends StatelessWidget {
 
   final GameId game;
 
-  void _open(BuildContext context) {
-    // The real games are added in later batches.
-    final l = AppLocalizations.of(context);
-    final code = context.read<LanguageProvider>().code;
-    context.read<SpeechService>().speak(l.comingSoon, code);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l.comingSoon)));
-  }
-
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
+    final code = context.watch<LanguageProvider>().code;
+    final progress = context.watch<ProgressService>();
+    final level = progress.highestUnlocked(game);
+    final stars = progress.starsInGame(game);
     return Material(
       color: game.color,
       borderRadius: BorderRadius.circular(28),
       child: InkWell(
         borderRadius: BorderRadius.circular(28),
-        onTap: () => _open(context),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => LevelMapScreen(game: game)),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 28,
+                radius: 34,
                 backgroundColor: Colors.white70,
-                child: Icon(game.icon, size: 32, color: AppColors.ink),
+                child: Text(game.emoji, style: const TextStyle(fontSize: 36)),
               ),
               const SizedBox(height: 8),
               Flexible(
                 child: Text(
-                  game.title(l),
+                  game.nameBi.of(code),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
                     color: AppColors.ink,
                   ),
                 ),
@@ -231,10 +262,10 @@ class _GameCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  l.levelLabel(1),
+                  '${UiText.level(level).of(code)}  ★$stars',
                   style: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.ink,
                   ),
                 ),

@@ -5,6 +5,7 @@ import 'app.dart';
 import 'core/audio/speech_service.dart';
 import 'core/localization/language_provider.dart';
 import 'core/storage/prefs_store.dart';
+import 'services/progress_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => LanguageProvider(store)),
         ChangeNotifierProvider(create: (_) => SpeechService(store)),
+        ChangeNotifierProvider(create: (_) => ProgressService(store)),
       ],
       child: const SaralBookKidsApp(),
     ),

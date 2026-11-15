@@ -3,10 +3,9 @@
 Free, offline, ad-free educational games for children aged 3–8 (English + हिंदी).
 Package ID: `com.saralbook.kids`
 
-## Batch 1 status
-Working: splash, first-launch language choice, instant English/Hindi switching (saved on device),
-GIGI mascot, home screen with 12 game cards, device text-to-speech ("Hear GIGI" button), tests, GitHub build.
-Not built yet: the 12 games themselves (they open a "coming soon" message), rewards, progress, parent zone.
+## Status (Batch 2)
+All 12 games are playable with endless levels, English + Hindi, device text-to-speech, stars, trophies, progress and a protected Parent Zone.
+Pictures are emoji and shapes drawn in code (needs Android 9 or newer for all emoji).
 
 ## EASIEST WAY - browser only (no installs)
 1. Unzip `saralbook-kids-batch1.zip` on your laptop (right-click -> Extract All).
