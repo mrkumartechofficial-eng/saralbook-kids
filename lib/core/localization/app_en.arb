@@ -1,0 +1,39 @@
+{
+  "@@locale": "en",
+  "appTitle": "SaralBook Kids",
+  "appSubtitle": "Play & Learn",
+  "tagline": "Play • Learn • Grow",
+  "switchLanguage": "हिंदी",
+  "welcomeMessage": "Hi! I am GIGI. Let’s play and learn!",
+  "hearGigi": "Hear GIGI",
+  "comingSoon": "This game is coming soon!",
+  "voiceMissingHint": "This phone has no voice for this language. Ask a grown-up to add it in Settings → Text-to-speech.",
+  "starsCount": "{count} stars",
+  "@starsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "levelLabel": "Level {level}",
+  "@levelLabel": {
+    "placeholders": {
+      "level": {"type": "int"}
+    }
+  },
+  "navHome": "Home",
+  "navRewards": "My Rewards",
+  "navProgress": "My Progress",
+  "navParent": "Parent Zone",
+  "gameAlphabet": "ABC & Varna",
+  "gameNumbers": "Number World",
+  "gameShapes": "Shape Matcher",
+  "gameColors": "Color Master",
+  "gameAnimals": "Animal Kingdom",
+  "gameFruits": "Fruit & Veggie Fun",
+  "gameMaths": "Maths Champion",
+  "gameSpelling": "Word Builder",
+  "gameMemory": "Memory Master",
+  "gamePuzzles": "Puzzle Planet",
+  "gameHabits": "Good Habits",
+  "gameQuiz": "Little Quiz Star"
+}
