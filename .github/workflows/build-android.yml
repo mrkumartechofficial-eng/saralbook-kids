@@ -63,9 +63,13 @@ jobs:
 
       - name: Apply SaralBook Kids app icon
         run: |
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            cp assets/branding/mipmap-$d/ic_launcher.png android/app/src/main/res/mipmap-$d/ic_launcher.png
-          done
+          if [ -d assets/branding ]; then
+            for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+              cp assets/branding/mipmap-$d/ic_launcher.png android/app/src/main/res/mipmap-$d/ic_launcher.png
+            done
+          else
+            echo "No icon files yet - skipping."
+          fi
 
       - name: Flutter version
         run: flutter --version
