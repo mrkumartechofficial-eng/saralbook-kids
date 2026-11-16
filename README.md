@@ -8,7 +8,7 @@ All 12 games are playable with endless levels, English + Hindi, device text-to-s
 Pictures are emoji and shapes drawn in code (needs Android 9 or newer for all emoji).
 
 ## EASIEST WAY - browser only (no installs)
-1. Unzip `saralbook-kids-batch1.zip` on your laptop (right-click -> Extract All).
+1. Unzip `saralbook-kids-batch3.zip` on your laptop (right-click -> Extract All).
 2. On github.com open your empty `saralbook-kids` repository -> **Add file -> Upload files**.
 3. Open the unzipped folder and drag **everything inside it** (including the `.github`, `lib`, `test`, `tool` folders and the loose files) into the browser page. Click **Commit changes**.
 4. Open the **Actions** tab -> click the running "Build Android" job. When it shows a green tick (about 8-12 minutes), scroll down to **Artifacts** and download `saralbook-kids-apk`.
@@ -25,7 +25,7 @@ Pictures are emoji and shapes drawn in code (needs Android 9 or newer for all em
    cd saralbook-kids
    flutter create --org com.saralbook --project-name kids --platforms android .
    ```
-4. Unzip `saralbook-kids-batch1.zip` and copy everything inside it into this folder, choosing **Replace** when asked.
+4. Unzip `saralbook-kids-batch3.zip` and copy everything inside it into this folder, choosing **Replace** when asked.
 5. Delete the file `test/widget_test.dart` (made by Flutter, no longer valid).
 6. Run:
    ```
@@ -49,3 +49,7 @@ Pictures are emoji and shapes drawn in code (needs Android 9 or newer for all em
 - The APK is signed with a temporary debug key for now. Proper release signing is Batch 11.
 - Voices: Hindi speech needs a Hindi voice installed on the phone (Settings → Text-to-speech).
 - Hindi text uses the phone's built-in Devanagari font. A bundled font can be added later.
+
+
+## Google Play
+See the `play_store/` folder: listing text, data-safety answers, release signing guide, publishing guide. Privacy policy page source: `docs/index.html`.

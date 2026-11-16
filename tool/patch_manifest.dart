@@ -1,7 +1,10 @@
 import 'dart:io';
 
-/// Sets the app name and lets the app find the phone's text-to-speech engine
-/// (required on Android 11+). Safe to run many times.
+/// Prepares android/app/src/main/AndroidManifest.xml:
+///  1. sets the app name,
+///  2. lets the app find the phone's text-to-speech engine (Android 11+),
+///  3. guarantees the app has NO internet permission, even if a library asks.
+/// Safe to run many times.
 void main() {
   final file = File('android/app/src/main/AndroidManifest.xml');
   if (!file.existsSync()) {
@@ -28,9 +31,14 @@ void main() {
     }
   }
 
-  if (text.contains('android.permission.INTERNET')) {
-    stderr.writeln(
-        'WARNING: INTERNET permission found in the main manifest. Remove it.');
+  if (!text.contains('xmlns:tools=')) {
+    text = text.replaceFirst('<manifest ',
+        '<manifest xmlns:tools="http://schemas.android.com/tools" ');
+  }
+  if (!text.contains('tools:node="remove"')) {
+    text = text.replaceFirst(
+        '<application',
+        '<uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>\n    <application');
   }
 
   if (text != original) {
