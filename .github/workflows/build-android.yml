@@ -6,12 +6,41 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+
+      - name: Apply uploaded update zip (if any)
+        if: github.event_name != 'pull_request'
+        run: |
+          FOUND=0
+          for z in *.zip; do
+            [ -e "$z" ] || continue
+            FOUND=1
+            echo "Applying $z"
+            unzip -o -q "$z" -x '.github/*' '__MACOSX/*'
+            rm -f "$z"
+          done
+          if [ -f delete_files.txt ]; then
+            while IFS= read -r f; do
+              case "$f" in ""|/*|*..*) continue ;; esac
+              rm -rf -- "$f"
+            done < delete_files.txt
+            rm -f delete_files.txt
+          fi
+          if [ "$FOUND" = "1" ]; then
+            git config user.name "github-actions"
+            git config user.email "actions@users.noreply.github.com"
+            git add -A
+            git commit -m "Apply uploaded update" || true
+            git push || echo "Could not push (build continues with the updated files)."
+          fi
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -32,13 +61,19 @@ jobs:
             cp -r /tmp/scaffold/android ./android
           fi
 
+      - name: Apply SaralBook Kids app icon
+        run: |
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            cp assets/branding/mipmap-$d/ic_launcher.png android/app/src/main/res/mipmap-$d/ic_launcher.png
+          done
+
       - name: Flutter version
         run: flutter --version
 
       - name: Get packages
         run: flutter pub get
 
-      - name: Patch Android manifest (app name, text-to-speech query)
+      - name: Patch Android manifest (app name, text-to-speech, no internet)
         run: dart run tool/patch_manifest.dart
 
       - name: Generate translations
@@ -57,11 +92,46 @@ jobs:
       - name: Build release AAB
         run: flutter build appbundle --release
 
+      - name: Show the permissions the APK really asks for
+        run: |
+          AAPT=$(ls $ANDROID_HOME/build-tools/*/aapt | sort -V | tail -1)
+          $AAPT dump permissions build/app/outputs/flutter-apk/app-release.apk | tee permissions.txt
+          if grep -q "android.permission.INTERNET" permissions.txt; then
+            echo "::error::INTERNET permission found - this app must be fully offline"
+            exit 1
+          fi
+          echo "OK: no INTERNET permission."
+
+      - name: Sign release (only if signing secrets are set)
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ]; then
+            echo "No signing secrets found: files stay debug-signed (fine for testing, NOT for Google Play)."
+            exit 0
+          fi
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          APK=build/app/outputs/flutter-apk/app-release.apk
+          $BT/zipalign -f -p 4 "$APK" "$RUNNER_TEMP/aligned.apk"
+          $BT/apksigner sign --ks "$RUNNER_TEMP/upload.jks" --ks-pass env:KS_PASS --key-pass env:KEY_PASS --ks-key-alias "$KEY_ALIAS" --out build/app/outputs/flutter-apk/app-release-signed.apk "$RUNNER_TEMP/aligned.apk"
+          AAB=build/app/outputs/bundle/release/app-release.aab
+          zip -q -d "$AAB" 'META-INF/*.SF' 'META-INF/*.RSA' 'META-INF/*.DSA' 'META-INF/*.EC' 'META-INF/MANIFEST.MF' || true
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore "$RUNNER_TEMP/upload.jks" -storepass:env KS_PASS -keypass:env KEY_PASS "$AAB" "$KEY_ALIAS"
+          jarsigner -verify "$AAB" | head -3
+          rm -f "$RUNNER_TEMP/upload.jks"
+          echo "Signed APK and AAB created."
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: saralbook-kids-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/app-release-signed.apk
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
